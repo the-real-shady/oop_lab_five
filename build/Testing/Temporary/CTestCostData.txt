@@ -1,7 +1,0 @@
-PmrQueueTest.MaintainsFifoOrder 2 0.00114304
-PmrQueueTest.IteratesOverComplexTypes 2 0.000958333
-PmrQueueTest.ConstIteratorsProvideReadOnlyAccess 1 0.00195821
-PmrQueueTest.CopyAndMoveOperationsPreserveOrder 2 0.000917208
-PmrQueueTest.PopOnEmptyThrows 2 0.00113392
-DynamicTrackingResourceTest.ReusesReleasedBlocks 2 0.000737562
----
