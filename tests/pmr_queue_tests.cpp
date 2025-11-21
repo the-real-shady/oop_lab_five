@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -56,6 +57,30 @@ TEST(PmrQueueTest, IteratesOverComplexTypes) {
 
     EXPECT_EQ(ids, (std::vector<int>{1, 2, 3}));
     EXPECT_EQ(labels, (std::vector<std::string>{"alpha", "beta", "gamma"}));
+}
+
+TEST(PmrQueueTest, CopyAndMoveOperationsPreserveOrder) {
+    DynamicTrackingResource resource("copy-move");
+    PmrQueue<int> original(&resource);
+    original.push(1);
+    original.push(2);
+
+    PmrQueue<int> copy(original);
+    ASSERT_EQ(copy.size(), 2);
+    EXPECT_EQ(copy.front(), 1);
+    EXPECT_EQ(copy.back(), 2);
+
+    PmrQueue<int> moved(std::move(original));
+    EXPECT_TRUE(original.empty());
+    EXPECT_EQ(moved.size(), 2);
+    EXPECT_EQ(moved.front(), 1);
+    EXPECT_EQ(moved.back(), 2);
+}
+
+TEST(PmrQueueTest, PopOnEmptyThrows) {
+    DynamicTrackingResource resource("pop-empty");
+    PmrQueue<int> queue(&resource);
+    EXPECT_THROW(queue.pop(), std::runtime_error);
 }
 
 TEST(DynamicTrackingResourceTest, ReusesReleasedBlocks) {
