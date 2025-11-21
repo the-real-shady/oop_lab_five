@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -81,6 +82,41 @@ TEST(PmrQueueTest, PopOnEmptyThrows) {
     DynamicTrackingResource resource("pop-empty");
     PmrQueue<int> queue(&resource);
     EXPECT_THROW(queue.pop(), std::runtime_error);
+}
+
+TEST(PmrQueueTest, FrontAndBackThrowOnEmpty) {
+    DynamicTrackingResource resource("front-back-empty");
+    PmrQueue<int> queue(&resource);
+    EXPECT_THROW(queue.front(), std::runtime_error);
+    EXPECT_THROW(queue.back(), std::runtime_error);
+}
+
+TEST(PmrQueueTest, HandlesSingleElementLifecycle) {
+    DynamicTrackingResource resource("single-element");
+    PmrQueue<long long> queue(&resource);
+    queue.push(std::numeric_limits<long long>::min());
+    ASSERT_EQ(queue.size(), 1);
+    EXPECT_EQ(queue.front(), queue.back());
+    EXPECT_EQ(queue.front(), std::numeric_limits<long long>::min());
+    queue.pop();
+    EXPECT_TRUE(queue.empty());
+    EXPECT_EQ(queue.size(), 0);
+}
+
+TEST(PmrQueueTest, HandlesManyElements) {
+    DynamicTrackingResource resource("bulk");
+    PmrQueue<int> queue(&resource);
+
+    constexpr int kCount = 512;
+    for (int i = 0; i < kCount; ++i) {
+        queue.emplace(i);
+    }
+    ASSERT_EQ(queue.size(), static_cast<std::size_t>(kCount));
+    for (int i = 0; i < kCount; ++i) {
+        EXPECT_EQ(queue.front(), i);
+        queue.pop();
+    }
+    EXPECT_TRUE(queue.empty());
 }
 
 TEST(DynamicTrackingResourceTest, ReusesReleasedBlocks) {
